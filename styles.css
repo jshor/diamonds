@@ -1,0 +1,262 @@
+@font-face {
+  font-family: 'Data Seventy';
+  src: url('./data_seventy.otf'); /*URL to font*/
+}
+
+body {
+  font-family: 'Data Seventy';
+  font-size: 1.5em;
+}
+
+.stats {
+  background-color: #797778;
+  width: 792px;
+  margin-top: 0.5em;
+  display: flex;
+  padding: 0.25em;
+}
+
+.stats__section {
+  flex: 1;
+}
+
+.stats__bonus {
+  margin-top: 0.25em;
+  margin-right: 0.5em;
+  max-width: 160px;
+  display: grid;
+  grid-template-columns: repeat(23, 1fr);
+  grid-gap: 2px;
+}
+
+.stats__key {
+  width: 38px;
+  height: 22px;
+  margin: 0.25em 0;
+  background-image: url('./key.png');
+  filter: grayscale(100%) drop-shadow(1px 1px 1px black);
+  opacity: 0.5;
+}
+
+.stats__key--active {
+  filter: drop-shadow(1px 1px 1px black);
+  opacity: 1;
+}
+
+.stats__score {
+  font-size: 1.5em;
+}
+
+.bonus {
+  width: 5px;
+  height: 10px;
+  background-color: darkred;
+}
+
+.bonus--active {
+  background-color: red;
+}
+
+.game {
+  border: 5px solid gray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 792px;
+  height: 480px;
+  box-shadow: 0 0 20px #fff;
+  border-color: rgb(51,153,255);
+  /*
+  border-right: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  box-sizing: border-box;
+  background-size: 66px 40px;
+  background-image:
+    linear-gradient(to right, #eee 1px, transparent 1px),
+    linear-gradient(to bottom, #eee 1px, transparent 1px);
+  */
+  background-image: url('./background.png');
+  background-position: 20px;
+}
+
+.game--lightblue {
+  border-color: #33B1FF;
+}
+
+.game--blue {
+  border-color: #0024FF;
+}
+
+.game--red {
+  border-color: #FF2700;
+}
+
+.game--purple {
+  border-color: #CC00CC;
+}
+
+.game--brown {
+  border-color: #925B00;
+}
+
+.game--green {
+  border-color: #00FF00;
+}
+
+.game--orange {
+  border-color: #FF9900;
+}
+
+.notice {
+  background-color: darkgray;
+  font-weight: bold;
+  font-size: 2em;
+  z-index: 9999;
+  padding: 0.25em;
+  border: 1px solid #000;
+}
+
+.notice--hidden {
+  display: none;
+}
+
+.ball {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-position: 0 0;
+  background-image: url('balls.png');
+}
+
+.ball--busted {
+  position: relative;
+  display: inline-block;
+}
+
+.ball--blue {
+  background-position: 0 120px;
+}
+
+.ball--red {
+  background-position: 0 100px;
+}
+
+.ball--green {
+  background-position: 20px;
+}
+
+.ball--brown {
+  background-position: 0 60px;
+}
+
+.ball--purple {
+  background-position: 0 40px;
+}
+
+.ball--orange {
+  background-position: 0 160px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100vh;
+  background-color: black;
+}
+
+.block {
+  display: block;
+  position: absolute;
+  box-sizing: border-box;
+  top: 0;
+  left: 0;
+  width: 66px;
+  height: 40px;
+  background-image: url('./block.png');
+}
+
+.block--space {
+  background-color: transparent;
+  background-image: none;
+}
+
+.block--lightblue {
+  background-position: 0 0;
+}
+
+.block--blue {
+  background-position: 0 680px;
+}
+
+.block--red {
+  background-position: 0 640px;
+}
+
+.block--green {
+  background-position: 0 600px;
+}
+
+.block--brown {
+  background-position: 0 560px;
+}
+
+.block--purple {
+  background-position: 0 520px;
+}
+
+.block--brush-blue {
+  background-position: 0 480px;
+}
+
+.block--brush-red {
+  background-position: 0 440px;
+}
+
+.block--brush-green {
+  background-position: 0 400px;
+}
+
+.block--brush-brown {
+  background-position: 0 360px;
+}
+
+.block--brush-purple {
+  background-position: 0 320px;
+}
+
+.block--brush-orange {
+  background-position: 0 280px;
+}
+
+.block--diamond {
+  background-position: 0 240px;
+}
+
+.block--key {
+  background-position: 0 200px;
+}
+
+.block--lock {
+  background-position: 0 160px;
+}
+
+.block--brick {
+  background-position: 0 120px;
+}
+
+.block--death {
+  background-position: 0 80px;
+}
+
+.block--reverse {
+  background-position: 0 40px;
+}

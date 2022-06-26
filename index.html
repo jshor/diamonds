@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="generator" content="parceljs" />
+  </head>
+  <body>
+    <div id="game" class="game">
+      <div id="graph"></div>
+      <div id="ball" class="ball"></div>
+      <div id="notice" class="notice notice--hidden"></div>
+    </div>
+    <div class="stats">
+      <div class="stats__section">
+        <div class="stats__heading">Score</div>
+        <div class="stats__score" id="score">000000</div>
+      </div>
+      <div class="stats__section">
+        <div class="stats__heading">Level: <span id="levelNumber">0</span></div>
+        <div class="stats__level" id="levelName">untitled</div>
+      </div>
+      <div class="stats__section" style="max-width: 80px">
+        <div class="stats__heading">Key</div>
+        <div class="stats__key" id="key"></div>
+      </div>
+      <div class="stats__section">
+        <div class="stats__heading">Bonus</div>
+        <div class="stats__bonus" id="bonus"></div>
+      </div>
+      <div class="stats__section">
+        <div class="stats__heading">Balls: <span id="ballCount">0</span></div>
+        <div class="stats__balls" id="balls"></div>
+      </div>
+    </div>
+    <button id="unpause">Start</button>
+    <script src="./index.ts"></script>
+  </body>
+</html>
