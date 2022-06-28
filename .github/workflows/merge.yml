@@ -1,0 +1,38 @@
+name: Build and Publish
+
+on:
+  push:
+    branches:
+      - master
+  release:
+    types: [created]
+
+env:
+  GIT_USER: 'GitHub Actions'
+  GIT_EMAIL: 'github-actions[bot]@users.noreply.github.com'
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Install npm dependencies
+        run: yarn
+
+      - name: Build
+        run: yarn build
+
+      - name: Deploy docs to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GIT_CONFIG_NAME: ${{ env.GIT_USER }}
+          GIT_CONFIG_EMAIL: ${{ env.GIT_EMAIL }}
+          BRANCH: gh-pages
+          FOLDER: dist
+          CLEAN: true

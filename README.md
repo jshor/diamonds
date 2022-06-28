@@ -1,9 +1,11 @@
 <p align="center">
   <h1 style="text-align: center;" align="center">Diamonds</h1>
-  A rebuild of the classic 90s-era video game, using TypeScript, Preact, and Zustand.
+  <p align="center">A rebuild of the classic 90s-era video game, using TypeScript, Preact, and Zustand.</p>
+</p>
 
+<p align="center">
   <a href="https://jshor.github.io/diamonds/">
-    <img src="https://raw.githubusercontent.com/jshor/diamonds/master/src/assets/screenshot.png" width="200" height="200" />
+    <img src="https://raw.githubusercontent.com/jshor/diamonds/master/src/assets/screenshot.png" />
   </a>
 </p>
 
