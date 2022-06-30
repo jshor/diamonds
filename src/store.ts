@@ -1,7 +1,7 @@
 import createStore from 'zustand'
 import levels from './data/levels.json'
 import { BlockType, Sound, State } from './types'
-import { findCollision } from './utils'
+import { findCollision, hasVerticalCollision } from './utils'
 import Constants from './constants'
 
 export default createStore<State>((set, get) => ({
@@ -167,6 +167,7 @@ export default createStore<State>((set, get) => ({
 
     if (paused) {
       set({
+        msLastFrameTime: Date.now(),
         paused: false,
         notice: ''
       })
@@ -185,7 +186,7 @@ export default createStore<State>((set, get) => ({
     pause('Get ready')
     set({
       position: {
-        x: Constants.BLOCK_WIDTH * 11,
+        x: (Constants.BLOCK_WIDTH * 11),
         y: (Constants.BLOCK_HEIGHT * 12) - Constants.BALL_DIAMETER
       },
       isReversed: false,
@@ -271,7 +272,7 @@ export default createStore<State>((set, get) => ({
   computeBonus: (): Promise<void> => {
     return new Promise(resolve => {
       function findRemainingTime () {
-        const { bonusTime, playSoundEffect, score } = get()
+        const { bonusTime, playSoundEffect } = get()
 
         if (bonusTime > 0) {
           set({ bonusTime: bonusTime - 1 })
@@ -342,9 +343,10 @@ export default createStore<State>((set, get) => ({
       hasKey,
       playSoundEffect,
       addToScore,
-      win
+      win,
+      die
     } = get()
-    const block = matrix[col][row]
+    const block = matrix[col]?.[row]
 
     const removeBlock = (col: number, row: number) => {
       matrix[col].splice(row, 1, BlockType.Space)
@@ -355,7 +357,13 @@ export default createStore<State>((set, get) => ({
       ? playSoundEffect(Sound.BounceUp)
       : playSoundEffect(Sound.BounceDown)
 
-    if (block >= BlockType.LightBlue && block <= BlockType.Purple) {
+    if (!block) {
+      return playBounce()
+    }
+
+    if (block  === BlockType.Death) {
+      die()
+    } else if (block >= BlockType.LightBlue && block <= BlockType.Purple) {
       // check the color (the color order starts at BrushBlue, plus one to skip LightBlue)
       if ((currentColor === BlockType.LightBlue && block === BlockType.LightBlue) || currentColor - 5 === block) {
         // color matches the block; consume it
@@ -401,8 +409,6 @@ export default createStore<State>((set, get) => ({
    * Computes the next animation frame.
    */
    computeFrame: () => {
-    const width = Constants.BLOCK_WIDTH * 12
-    const height = Constants.BLOCK_HEIGHT * 12
     const {
       currentBlock,
       horizontalDirection,
@@ -413,91 +419,75 @@ export default createStore<State>((set, get) => ({
       paused,
       msLastFrameTime,
       msTimeElapsed,
-      playSoundEffect,
       computeFrame
     } = get()
+
+    const now = Date.now()
+    const timeDelta = now - msLastFrameTime
+    const elapsed = msTimeElapsed + timeDelta
 
     let nextX = position.x
     let nextY = position.y
     let nextVerticalDirection = verticalDirection
 
+    const increment = timeDelta / Constants.BALL_SPEED
+
     if (currentBlock === -1) {
-      // initial position
-      set({ currentBlock: BlockType.Space })
+      set({ currentBlock: BlockType.Space }) // initial position
     }
 
     if (horizontalDirection === (isReversed ? -1 : 1)) {
-      // going left
-      nextX -= Constants.BALL_SPEED
+      nextX -= increment // going left (or right if reversed)
     } else if (horizontalDirection === (isReversed ? 1 : -1)) {
-      // going right
-      nextX += Constants.BALL_SPEED
+      nextX += increment // going right (or left if reversed)
     }
 
     if (nextVerticalDirection === 1) {
-      // going up
-      if (nextY <= 0) {
-        nextY = 0
-        nextVerticalDirection = -1
-        playSoundEffect(Sound.BounceDown)
-      } else {
-        nextY -= Constants.BALL_SPEED
-      }
+      nextY -= increment // going up
     } else {
-      // going down
-      if (nextY + Constants.BALL_DIAMETER >= height) {
-        nextVerticalDirection = 1
-        nextY = height - Constants.BALL_DIAMETER
-        playSoundEffect(Sound.BounceUp)
-      } else {
-        nextY += Constants.BALL_SPEED
-      }
+      nextY += increment // going down
     }
 
-    if (nextX < 0) {
-      // bounce off left
-      nextX = Constants.BOUNCE_AMOUNT
-      playSoundEffect(Sound.BounceDown)
-    } else if (position.x + Constants.BALL_DIAMETER > width) {
-      // bounce off right
-      nextX = width - Constants.BALL_DIAMETER - Constants.BOUNCE_AMOUNT
-      playSoundEffect(Sound.BounceDown)
-    } else {
-      // detect any collisions with blocks
-      const ballCenter = {
-        x: nextX + Constants.BALL_RADIUS,
-        y: nextY + Constants.BALL_RADIUS
+    // detect any collisions
+    const ballCenter = {
+      x: nextX + Constants.BALL_RADIUS,
+      y: nextY + Constants.BALL_RADIUS
+    }
+    // determine which column/row the ball is currently in
+    const col = Math.floor(ballCenter.x / Constants.BLOCK_WIDTH)
+    const row = Math.floor(ballCenter.y / Constants.BLOCK_HEIGHT)
+    const collision = findCollision(matrix, ballCenter, col, row)
+
+    if (collision) {
+      get().applyBlockHit(collision, collision.col > col || collision.row > row)
+
+      if (collision.col !== col) {
+        nextX = collision.col > col
+          ? (collision.col * Constants.BLOCK_WIDTH) - Constants.BALL_DIAMETER - Constants.BOUNCE_AMOUNT // collision to the right
+          : (collision.col + 1) * Constants.BLOCK_WIDTH + Constants.BOUNCE_AMOUNT // collision to the left
       }
-      // determine which column/row the ball is currently in
-      const col = Math.floor(ballCenter.x / Constants.BLOCK_WIDTH)
-      const row = Math.floor(ballCenter.y / Constants.BLOCK_HEIGHT)
-      const collision = findCollision(matrix, ballCenter, col, row)
 
-      if (collision) {
-        if (matrix[collision.col][collision.row] === BlockType.Death) {
-          get().die()
-        } else {
-          get().applyBlockHit(collision, collision.col > col || collision.row > row)
+      if (collision.row !== row) {
+        nextY = collision.row > row
+          ? (collision.row * Constants.BLOCK_HEIGHT) - Constants.BALL_DIAMETER // collision above (no bouncing)
+          : (collision.row + 1) * Constants.BLOCK_HEIGHT
 
-          if (collision.col !== col) {
-            nextX = collision.col > col
-              ? (collision.col * Constants.BLOCK_WIDTH) - Constants.BALL_DIAMETER - Constants.BOUNCE_AMOUNT // collision to the left
-              : (collision.col + 1) * Constants.BLOCK_WIDTH + Constants.BOUNCE_AMOUNT // collision to the right
-          }
-
-          if (collision.row !== row) {
-            nextY = collision.row > row
-              ? (collision.row * Constants.BLOCK_HEIGHT) - Constants.BALL_DIAMETER // collision above (no bouncing)
-              : (collision.row + 1) * Constants.BLOCK_HEIGHT + Constants.BOUNCE_AMOUNT // collision below (+ bounce)
-
+        if (collision.col !== col) {
+          // collision discovered on a corner; check if the next space the ball will enter is obstructed
+          // this is in a condition since this adds to the computational expense and occurs infrequently
+          if (hasVerticalCollision(ballCenter, nextVerticalDirection)) {
+            // only reverse the direction if a collision will occur
             nextVerticalDirection = nextVerticalDirection === -1 ? 1 : -1
           }
+        } else {
+          // otherwise, reverse direction only if the ball is in the same column
+          nextVerticalDirection = nextVerticalDirection === -1 ? 1 : -1
         }
       }
     }
 
-    const now = Date.now()
-    const elapsed = msTimeElapsed + (now - msLastFrameTime)
+    const totalAvailableBonus = Constants.BONUS_INCREMENTS * Constants.BONUS_TIME_MS
+    const bonusPercent = 1 - (elapsed / totalAvailableBonus)
 
     set({
       position: {
@@ -507,9 +497,7 @@ export default createStore<State>((set, get) => ({
       verticalDirection: nextVerticalDirection,
       msTimeElapsed: elapsed,
       msLastFrameTime: now,
-      bonusTime: Math.max(Math.ceil(
-        (1 - (elapsed / (Constants.BONUS_INCREMENTS * Constants.BONUS_TIME_MS))) * Constants.BONUS_INCREMENTS
-      ), 0)
+      bonusTime: Math.max(Math.ceil(bonusPercent * Constants.BONUS_INCREMENTS), 0)
     })
 
     if (!paused) {

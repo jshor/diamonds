@@ -42,10 +42,10 @@ kbd {
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   font-size: 0.75em;
-  color: #eee;
+  color: #999;
   text-align: center;
 }
 
 .info a {
-  color: #e8e8e8;
+  color: #999;
 }
